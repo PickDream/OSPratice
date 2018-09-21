@@ -57,16 +57,16 @@ inb(uint16_t port) {
 }
 
 /**
- * 
+ * 从I/O端口port 读取cnt个长度为32位数写到内存中
 */
 static inline void
 insl(uint32_t port, void *addr, int cnt) {
     asm volatile (
-            "cld;"                                      //清楚方向标志位，代表在串操作时向高地址移动
+            "cld;"                                      //清除方向标志位，代表在串操作时向高地址移动
             "repne; insl;"                              //repne 表示当ecx不为0的时候执行相应的操作,insl指令代表
-            : "=D" (addr), "=c" (cnt)                   //
+            : "=D" (addr), "=c" (cnt)                   //将addr原来的值
             : "d" (port), "0" (addr), "1" (cnt)         //"0"代表这与第一个输出变量一样的约束，"1"也相同
-            : "memory", "cc");                          //代表内存会发生改变"memory",控制寄存器会发生改变"cc"
+            : "memory", "cc");                          //代表内存会发生改变"memory",控制寄存器会发生改变"cc"(由于cld的设置)
 }
 
 /**
