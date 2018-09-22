@@ -10,7 +10,7 @@
 
 /*ELF文件头部分结构体*/
 struct elfhdr {
-    uint32_t e_magic;     // must equal ELF_MAGIC
+    uint32_t e_magic;     // 必须和ELF_MAGIC相等
     uint8_t e_elf[12];
     uint16_t e_type;      // 文件类型 1=relocatable, 2=executable, 3=shared object, 4=core image
     uint16_t e_machine;   // 针对的体系结构 3=x86, 4=68K, etc.
@@ -29,14 +29,14 @@ struct elfhdr {
 
 /*ELF文件程序头表*/
 struct proghdr {
-    uint32_t p_type;   // loadable code or data, dynamic linking info,etc.
-    uint32_t p_offset; // file offset of segment
-    uint32_t p_va;     // virtual address to map segment
-    uint32_t p_pa;     // physical address, not used
-    uint32_t p_filesz; // size of segment in file
-    uint32_t p_memsz;  // size of segment in memory (bigger if contains bss）
-    uint32_t p_flags;  // read/write/execute bits
-    uint32_t p_align;  // required alignment, invariably hardware page size
+    uint32_t p_type;   // 段类型
+    uint32_t p_offset; // 段位置相对于文件开始处的偏移
+    uint32_t p_va;     // 段在内存中的地址（虚拟地址）
+    uint32_t p_pa;     // 段的物理地址
+    uint32_t p_filesz; // 段在文件状态下的长度
+    uint32_t p_memsz;  // 段在内存中的长度(如果包含.bss段的话就会变得更大）
+    uint32_t p_flags;  // 段标志 read/write/execute bits
+    uint32_t p_align;  // 段在内存中的对齐, invariably hardware page size
 };
 
 #endif /* !__LIBS_ELF_H__ */

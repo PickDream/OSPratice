@@ -58,6 +58,7 @@ inb(uint16_t port) {
 
 /**
  * 从I/O端口port 读取cnt个长度为32位数写到内存中
+ * insl -> in string long
 */
 static inline void
 insl(uint32_t port, void *addr, int cnt) {

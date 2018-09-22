@@ -3,16 +3,10 @@
 
 /* Assembler macros to create x86 segments */
 
-/* 一个全空的GDT表项 */
+/* Normal segment */
 #define SEG_NULLASM                                             \
     .word 0, 0;                                                 \
     .byte 0, 0, 0, 0
-
-/*定义一个宏去方便的初始化一个GDT表项，需要拿到
-* type:段属性
-* base:段基址
-* lim: 段限长
-*/
 
 #define SEG_ASM(type,base,lim)                                  \
     .word (((lim) >> 12) & 0xffff), ((base) & 0xffff);          \
