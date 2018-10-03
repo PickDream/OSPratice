@@ -28,7 +28,7 @@
  * */
 
 #define SECTSIZE        512
-#define ELFHDR          ((struct elfhdr *)0x10000)      // scratch space
+#define ELFHDR          ((struct elfhdr *)0x10000)      // 定义一个指向内存中ELF文件头的结构体指针
 
 /* 等待硬盘空闲,*/
 static void
@@ -48,19 +48,17 @@ static void
 readsect(void *dst, uint32_t secno) {
     //等待磁盘准备好
     waitdisk();
-
     outb(0x1F2, 1);                           // 表明要读写几个扇区。最小是1个扇区
-    outb(0x1F3, secno & 0xFF);                //拿到0-7位
-    outb(0x1F4, (secno >> 8) & 0xFF);         //拿到8-15位
-    outb(0x1F5, (secno >> 16) & 0xFF);        //拿到16-23位
+    outb(0x1F3, secno & 0xFF);                //拿到0-7位，作为0号从盘的扇区
+    outb(0x1F4, (secno >> 8) & 0xFF);         //拿到8-15位作为0号磁盘的柱面数(低字节)
+    outb(0x1F5, (secno >> 16) & 0xFF);        //拿到16-23位作为0号磁盘的柱面数(高字节)
     outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);//拿到24-27位，高位全部置为一
     outb(0x1F7, 0x20);                        // cmd 0x20 - 读取扇区指令
-
     //等待磁盘完成操作
     waitdisk();
 
     // 按照双字读取文件到目标地址，硬盘有数据缓存
-    insl(0x1F0, dst, SECTSIZE / 4);
+    insl(0x1F0, dst, SECTSIZE / 4);                                                          
 }
 
 /* *
@@ -72,18 +70,17 @@ static void
 readseg(uintptr_t va, uint32_t count, uint32_t offset) {
     //找到内存中加载地址的末端
     uintptr_t end_va = va + count;
-
-    //将起始地址进行对齐读入，头部可能会多，但整体的地址不会收到影响
-    //offset偏移是从文件开始位置进行的偏移
+    //由于硬盘中的每一个扇区加载到内存的时候都需要512字节的对齐，于是在这里把起始加载地址向下对齐512字节的倍数的地址处
     va -= offset % SECTSIZE;
 
-    // 将字节数转换为扇区的个数; 由于内核可执行程序是在第二个扇区开始的，因此需要+1
+    // 将偏移的字节数转换为扇区的个数; 由于内核可执行程序是在第二个扇区开始的，因此需要+1
+    //这里直接用取整运算固然会在前面包含一部分不需要的信息，但是这并没有关系，va的地址也提前了，整体地址是对的
     uint32_t secno = (offset / SECTSIZE) + 1;
 
     // 如果太慢了，就一次多读几个扇区         
     // 通过递增扇区号，将程序头部指明的节全部读取到内存中来
     // 需要注意的是，这一部分代码可能会多读一部分，但是没有什么问题 --
-    for (; va < end_va; va += SECTSIZE, secno ++) {
+    for (; va < end_va; va += SECTSIZE, secno++) {
         readsect((void *)va, secno);
     }
 }
